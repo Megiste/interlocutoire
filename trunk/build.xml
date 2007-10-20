@@ -1,0 +1,94 @@
+<?xml version="1.0" ?>
+<project default="main">
+	<taskdef resource="genjar.properties" />
+	<property name="build.dir" value="./bin" />
+	<property name="src.dir" value="./src" />
+	<property name="lib.dir" value="./lib" />
+	<property name="main.class" value="fr.megiste.interloc.InterlocMain" />
+
+	<!-- Definition du classpath du projet -->
+	<path id="projet.classpath">
+		<fileset dir="${lib.dir}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+	<path id="jar.classpath">
+		<pathelement path="${build.dir}" />
+		<fileset dir="${lib.dir}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<target name="main" depends="jar, ftp, zip" description="Main target">
+		<echo>
+            Building the .jar file.
+        </echo>
+	</target>
+
+	<target name="clean">
+		<delete dir="${build.dir}" />
+		<mkdir dir="${build.dir}" />
+	</target>
+
+	<target name="compile" description="Compilation target">
+
+		<javac srcdir="${src.dir}" destdir="${build.dir}" includes="**/*.java" debug="true" target="1.4" source="1.4" encoding="utf-8">
+			<classpath refid="projet.classpath" />
+		</javac>
+		<copy file="${src.dir}/build.conf" tofile="${build.dir}/build.conf" />
+
+	</target>
+
+	<target name="compress" description="Compression target">
+		<buildnumber file="./src/build.conf" />
+		<jar jarfile="jar/interloc.jar" manifest="interloc.manifest" index="Yes">
+			<fileset dir="${build.dir}" includes="fr/**/*.class" />
+			<fileset dir="./src" includes="build.conf" />
+		</jar>
+	</target>
+
+	<target name="zip">
+		<zip destfile="interloc_src.zip" basedir="./src/" includes="fr/megiste/interloc/**/*.java" />
+		<zip destfile="interloc.zip">
+			<fileset dir="./" includes="src/build.conf" />
+			<fileset dir="./" includes="src/**/*.*" />
+			<fileset dir="./" includes="build.xml" />
+			<fileset dir="./" includes="*.keystore" />
+		</zip>
+	</target>
+
+	<target name="ftp" depends="sign, jar, zip" description="ftp transfert">
+		<ftp server="ftpperso.free.fr" remotedir="interloc" userid="lependu" password="na2wbov7" depends="yes">
+			<fileset dir="./jar">
+				<include name="*.jar" />
+			</fileset>
+			<fileset dir="./">
+				<include name="*.zip" />
+			</fileset>
+			<fileset dir="./jnlp">
+				<include name="*.jnlp" />
+			</fileset>
+		</ftp>
+	</target>
+
+	<target name="jar" depends="compile">
+		<buildnumber file="./src/build.conf" />
+		<genjar jarfile="jar/interloc.jar">
+			<class name="${main.class}" />
+			<classpath refid="jar.classpath" />
+			<resource file="src/build.conf" />
+			<resource file="src/labels.properties" />
+			<classfilter>
+				<exclude name="org.bouncycastle." />
+				<exclude name="org.w3c.dom." />
+				<exclude name="org.xml.sax." />
+			</classfilter>
+			<manifest>
+				<attribute name="Main-Class" value="${main.class}" />
+			</manifest>
+		</genjar>
+	</target>
+	<target name="sign" depends="jar">
+		<signjar jar="jar/interloc.jar" alias="megiste" storepass="changeit" keystore="megiste.keystore" />
+	</target>
+</project>
