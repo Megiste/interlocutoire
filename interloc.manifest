@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Main-Class: fr.megiste.interloc.InterlocMain
+Class-Path: itext-2.0.0.jar
+
