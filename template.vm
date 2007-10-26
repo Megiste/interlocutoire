@@ -1,0 +1,19 @@
+<html><head><meta http-equiv="Content-Type" Content="text/html; charset=UTF-8"></head><body>
+#set( $repName = $file.getName() + "_images")
+#foreach( $pack in $packs )
+	#if ($pack.getTitle())
+		<h1>$pack.getTitle()</h1>
+	#end
+	<table border=0 cellpadding=0 cellspacing=0>
+	#foreach( $image in $pack.getImages())
+		#set ($newPath = $exporter.writeImage($repName,$image,$velocityCount))
+		<tr><td><img src="$newPath"/></td></tr>
+	#end
+	#if ($pack.getCommentary())
+		$pack.getTitle()<br/>
+	#end
+	</table>
+#end
+
+
+</body></html>

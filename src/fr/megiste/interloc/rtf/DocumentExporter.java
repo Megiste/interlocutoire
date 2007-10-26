@@ -4,9 +4,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.logging.Logger;
-
-import javax.imageio.ImageIO;
 
 import fr.megiste.interloc.InterlocMain;
 import fr.megiste.interloc.data.ModeleLiens;
@@ -24,6 +23,11 @@ public abstract class DocumentExporter {
         
         public void finish();
     }
+
+    
+	protected ArrayList packs = new ArrayList();
+
+	private ImagePack currentImagePack;
 
     protected static final int LARGEUR_IMAGE_EXPORT = 600;
 
@@ -57,36 +61,37 @@ public abstract class DocumentExporter {
         if (!workingDir.exists()) {
             workingDir.mkdirs();
         }
+        packs=new ArrayList();
     }
-
-    abstract void addSimpleText(String txt);
-
-    abstract void addTitleText(String txt);
-
-    abstract void closeDocument();
 
     private void dessinerEtape(int noEtape) {
         logger.info("Pas à pas : " + noEtape);
         String message = "label.pasapas";
         affichageHelper.afficherMessage(message,new Object[]{""+noEtape});
         affichageHelper.afficherProgres(noEtape);
-        addTitleText("Etape " + noEtape + " :");
+        
+        newImagePack();
+        currentImagePack.setTitle("Etape " + noEtape + " :");
 
         BufferedImage rendImage = dessinateur.creerImage();
 
         splitAndInsertImages(rendImage, noEtape);
 
-        addSimpleText(Messages.getInstance().getValue("texte.commentaireetape",new Object[]{""+noEtape}));
+        currentImagePack.setCommentary(Messages.getInstance().getValue("texte.commentaireetape",new Object[]{""+noEtape}));
     }
 
     public void exporterPasAPas(File outputFile, int phraseMin, int phraseMax) throws ErreurExportException {
-        if (phraseMax == 0)
-            phraseMax = Integer.MAX_VALUE;
-        if (phraseMin == Integer.MAX_VALUE)
-            phraseMin = 0;
+        if (phraseMax == 0){
+        	phraseMax = Integer.MAX_VALUE;
+        }
+        if (phraseMin == Integer.MAX_VALUE) {
+        	phraseMin = 0;
+        }
         logger.info("Export pas à pas...");
-        if (outputFile.exists())
-            outputFile.delete();
+        if (outputFile.exists()){
+        	outputFile.delete();
+        }
+            
 
         try {
             initDocument(outputFile);
@@ -110,8 +115,8 @@ public abstract class DocumentExporter {
                     dessinerEtape(i + 1);
                 }
             }
-
-            closeDocument();
+            writeImagePacks();
+            //closeDocument();
         } catch (Exception e) {
             InterlocMain.erreur(e);
             throw new ErreurExportException(e.getMessage());
@@ -121,18 +126,25 @@ public abstract class DocumentExporter {
         affichageHelper.finish();
     }
 
-    public void exportTotal2(File outputFile, int phraseMin, int phraseMax) throws ErreurExportException {
-        if (phraseMax == 0)
-            phraseMax = Integer.MAX_VALUE;
-        if (phraseMin == Integer.MAX_VALUE)
-            phraseMin = 0;
+    public abstract void writeImagePacks(); 
+
+	public void exportTotal(File outputFile, int phraseMin, int phraseMax) throws ErreurExportException {
+        if (phraseMax == 0){
+        	phraseMax = Integer.MAX_VALUE;
+        }
+        if (phraseMin == Integer.MAX_VALUE){
+        	phraseMin = 0;
+        }
         logger.info("Export total...");
-        if (outputFile.exists())
-            outputFile.delete();
+        if (outputFile.exists()){
+        	outputFile.delete();
+        }
+            
 
         try {
             initDocument(outputFile);
-
+            newImagePack();
+            currentImagePack.setTitle("Export total");
             modele.setIgnoreModifs(true);
             //int nbEtapes = modele.size() - modele.getNbFeuilles();
             modeleTmp = modele;
@@ -158,15 +170,17 @@ public abstract class DocumentExporter {
                 if (h < 0)
                     continue;
                 BufferedImage subImage = rendImage.getSubimage(0, y, width, h);
-                File fichierImage = new File(workingDir, "./imageTmp" + "_" + i + ".jpg");
-                ImageIO.write(subImage, "jpg", fichierImage);
+                /**File fichierImage = new File(workingDir, "./imageTmp" + "_" + i + ".jpg");
+                ImageIO.write(subImage, "jpg", fichierImage);*/
+                
+                currentImagePack.getImages().add(subImage);
 
-                insertImage(subImage, "" + i);
+//                insertImage(subImage, "" + i);
 
                 oldpos = pos;
             }
-
-            closeDocument();
+            writeImagePacks();
+            //closeDocument();
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
@@ -237,7 +251,13 @@ public abstract class DocumentExporter {
 //
 //    }
 
-    abstract void initDocument(File outputFile);
+    private void newImagePack() {
+		currentImagePack = new ImagePack();
+		packs.add(currentImagePack);
+		
+	}
+
+	abstract void initDocument(File outputFile);
 
 //    private void insererImageDansDocument(BufferedImage image, Document document) throws IOException, DocumentException {
 //
@@ -265,8 +285,6 @@ public abstract class DocumentExporter {
 //        fichierImage.delete();
 //    }
     
-    abstract void insertImage(BufferedImage subImage, String id);
-    
     /**
      * @param affichageHelper the affichageHelper to set
      */
@@ -284,8 +302,8 @@ public abstract class DocumentExporter {
             int pos = cuts[i];
             int width = rendImage.getWidth();
             BufferedImage subImage = rendImage.getSubimage(0, oldpos, width, pos - oldpos);
-
-            insertImage(subImage, "" + noEtape + "_" + i);
+            currentImagePack.getImages().add(subImage);
+            //insertImage(subImage, "" + noEtape + "_" + i);
             oldpos = pos;
         }
 

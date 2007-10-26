@@ -52,6 +52,7 @@ import fr.megiste.interloc.rtf.DocumentExporter;
 import fr.megiste.interloc.rtf.ErreurExportException;
 import fr.megiste.interloc.rtf.HTMLExporter;
 import fr.megiste.interloc.rtf.RTFExporter;
+import fr.megiste.interloc.rtf.VelocityExporter;
 import fr.megiste.interloc.rtf.DocumentExporter.AffichageHelper;
 import fr.megiste.interloc.util.Messages;
 
@@ -420,8 +421,6 @@ public class InterlocIhm extends JFrame {
     }
 
     protected void exporterFichierDansDocWord() throws ErreurExportException {
-        if (chooserExport == null)
-            initChooserExport();
         if (lastExportTotalSelectedFile != null) {
             chooserExport.setSelectedFile(lastExportTotalSelectedFile);
         } else {
@@ -435,7 +434,7 @@ public class InterlocIhm extends JFrame {
             // exporteur.exportTotal(chooserExport.getSelectedFile());
 
             dessinateur.initMinMaxIndexes();
-            exporteur.exportTotal2(chooserExport.getSelectedFile(), dessinateur.getIndiceMin(), dessinateur
+            exporteur.exportTotal(chooserExport.getSelectedFile(), dessinateur.getIndiceMin(), dessinateur
                     .getIndiceMax());
 
             afficherInfo("message.exportOK", new String[] { chooserExport.getSelectedFile().getPath() });
@@ -445,8 +444,6 @@ public class InterlocIhm extends JFrame {
     }
 
     protected void exporterFichierEnImage() throws IOException {
-        if (chooserExport == null)
-            initChooserExport();
 
         RenderedImage rendImage = dessinateur.creerImage();
 
@@ -485,9 +482,6 @@ public class InterlocIhm extends JFrame {
     }
 
     private void exporterPasAPas() throws ErreurExportException {
-        if (chooserExport == null) {
-            initChooserExport();
-        }
         dessinateur.initMinMaxIndexes();
         String id = "";
         if (dessinateur.getIndiceMax() != 0) {
@@ -607,6 +601,9 @@ public class InterlocIhm extends JFrame {
 
         initCommandes();
         initCommandesInvisibles();
+        
+    	initChooser();
+    	initChooserExport();
 
         panneauBoutonsHaut.add(taillePile);
 
@@ -664,6 +661,7 @@ public class InterlocIhm extends JFrame {
     }
 
     private void initCommandes() {
+    	
         InterlocAction action = null;
 
         action = new InterlocAction("label.bouton.ouvrir") {
@@ -734,7 +732,7 @@ public class InterlocIhm extends JFrame {
 
         };
         enregistrerAction("x", action, false, PANNEAU_BAS);
-
+        
         action = new InterlocAction("label.bouton.image") {
             public void executer(ActionEvent arg0) throws Exception {
                 exporterFichierEnImage();
@@ -752,9 +750,6 @@ public class InterlocIhm extends JFrame {
     }
 
     protected void exporterFichierDansDocHTML() throws ErreurExportException {
-        if (chooserExport == null)
-            initChooserExport();
-
         dessinateur.initMinMaxIndexes();
         String id = "";
         if (dessinateur.getIndiceMax() != 0) {
@@ -773,18 +768,18 @@ public class InterlocIhm extends JFrame {
 
         int returnVal = chooserExport.showSaveDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            DocumentExporter exporteur = new HTMLExporter(dessinateur.getModel());
+            DocumentExporter exporteur = new VelocityExporter(dessinateur.getModel());
 
             // exporteur.exportTotal(chooserExport.getSelectedFile());
 
-            exporteur.exportTotal2(chooserExport.getSelectedFile(), dessinateur.getIndiceMin(), dessinateur
+            exporteur.exportTotal(chooserExport.getSelectedFile(), dessinateur.getIndiceMin(), dessinateur
                     .getIndiceMax());
 
             afficherInfo("message.exportOK", new String[] { chooserExport.getSelectedFile().getPath() });
             lastExportTotalSelectedFile = chooserExport.getSelectedFile();
         }
     }
-
+    
     private void initCommandesInvisibles() {
         InterlocAction action = null;
 
@@ -867,8 +862,6 @@ public class InterlocIhm extends JFrame {
     }
 
     private void ouvrirFichier() throws LectureHOMException, ErreurRecupHistoriqueException {
-        if (chooser == null)
-            initChooser();
         int returnVal = chooser.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             chargeFichier(chooser.getSelectedFile());
@@ -897,8 +890,6 @@ public class InterlocIhm extends JFrame {
     }
 
     protected void sauverFichierSous() throws ErreurEcritureException {
-        if (chooser == null)
-            initChooser();
         chooser.setSelectedFile(fichierCourant);
         int returnVal = chooser.showSaveDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {

@@ -101,4 +101,9 @@ public class RTFExporter extends DocumentExporter {
         
     }
 
+	public void writeImagePacks() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
