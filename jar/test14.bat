@@ -1,2 +1,2 @@
-C:\JDK1.4\bin\java -jar interloc.jar %1%
+C:\j2sdk1.4.2_15\bin\java -jar interloc.jar %1%
 

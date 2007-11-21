@@ -1,5 +1,5 @@
 <html><head><meta http-equiv="Content-Type" Content="text/html; charset=UTF-8"></head><body>
-#set( $repName = $file.getName() + "_images")
+#set( $repName = $file.getName().substring(0, $file.getName().length()-$file.getName().lastIndexOf('.'))+ "_images")
 #foreach( $pack in $packs )
 	#if ($pack.getTitle())
 		<h1>$pack.getTitle()</h1>

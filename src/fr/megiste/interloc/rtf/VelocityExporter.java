@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 
@@ -24,12 +25,53 @@ public class VelocityExporter extends DocumentExporter {
 
 
 	private File file;
+
+
+	private File outputDir;
+
+
+	private static String TEMPLATE_BASE_FILE = "template"+File.separator+"template.vm";;
 	
 
 	
 
 	public VelocityExporter(ModeleLiens modele) {
 		super(modele);
+		initTemplateFile();
+	}
+
+
+	private void initTemplateFile() {
+		File f = new File("." +File.separator+ TEMPLATE_BASE_FILE);
+		if(f.exists() && f.length()==0){
+			f.delete();
+		}
+		if(!f.exists()){
+			if(!f.getParentFile().exists()){
+				f.getParentFile().mkdirs();
+			}
+			
+			
+			try {
+				ClassLoader cl = this.getClass().getClassLoader();
+				InputStream in = cl.getResourceAsStream(f.getName());
+				FileOutputStream out = new FileOutputStream(f);
+				  // Transfer bytes from in to out
+		        byte[] buf = new byte[1];
+		        int len;
+		        while ((len = in.read(buf)) > 0) {
+		            out.write(buf, 0, len);
+		        }
+		        in.close();
+		        out.close();
+				
+			} catch (Exception e) {
+				throw new InterlocException(e);
+			}
+			
+			
+		}
+		
 	}
 
 
@@ -46,21 +88,29 @@ public class VelocityExporter extends DocumentExporter {
 	public void writeImagePacks() {
 		context.put("packs", (ImagePack[]) packs.toArray(new ImagePack[packs.size()]));
 		
-		File output=file;
+		outputDir =file.getParentFile();
 		
-		String templateFile = "template.vm";
+		File template = new File(TEMPLATE_BASE_FILE);
+		String templateName = template.getName();
 		
-		handleTemplate(output, templateFile);
+		handleTemplate(file.getName(), templateName);
 		
 	}
 
 
 	/**
-	 * @param output
-	 * @param templateFile
+	 * @param fileName
+	 * @param TEMPLATE_BASE_FILE
 	 */
-	public void handleTemplate(File output, String templateFile) {
+	public boolean handleTemplate(String fileName, String templateName) {
+		
+		String templateFile = new File(TEMPLATE_BASE_FILE).getParentFile().getName() + File.separator + templateName;
 		Template template = null;
+		File outputFile = new File(outputDir,fileName);
+		if(!outputFile.getParentFile().exists()){
+			outputFile.getParentFile().mkdirs();
+		}
+		System.out.println("Processing :" + templateName + " to " + outputFile);
 		try {
 			template = Velocity.getTemplate(templateFile);
 		} catch (ResourceNotFoundException e) {
@@ -71,7 +121,7 @@ public class VelocityExporter extends DocumentExporter {
 			throw new InterlocException(e);
 		}
 		try {
-			FileWriter fw = new FileWriter(output);
+			FileWriter fw = new FileWriter(outputFile);
 			if(template!=null){
 				template.merge(context, fw);
 			}
@@ -85,9 +135,16 @@ public class VelocityExporter extends DocumentExporter {
 		} catch (IOException e) {
 			throw new InterlocException(e);
 		}
+		System.out.println("Processing :" + templateName + "  OK");
+		return true;
 	}
 
 	public String writeImage(String repName,BufferedImage image,int count){
+		String imageName = "imageTmp_" + count + ".jpg";
+		return writeImage(repName, image, imageName);
+	}
+	
+	public String writeImage(String repName,BufferedImage image,String imageName){
 		
 		
         String imgPath;
@@ -97,7 +154,7 @@ public class VelocityExporter extends DocumentExporter {
 			if(!rep.exists()){
 				rep.mkdirs();
 			}
-			File fichierImage = new File(rep, "imageTmp_" + count + ".jpg");
+			File fichierImage = new File(rep, imageName);
 			if(fichierImage.exists()){
 				fichierImage.delete();
 			}
