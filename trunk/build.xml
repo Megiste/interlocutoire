@@ -36,6 +36,8 @@
 			<classpath refid="projet.classpath" />
 		</javac>
 		<copy file="${src.dir}/build.conf" tofile="${build.dir}/build.conf" />
+		<copy file="${src.dir}/template.vm" tofile="${build.dir}/template.vm" />
+		<copy file="${src.dir}/labels.properties" tofile="${build.dir}/labels.properties" />
 
 	</target>
 
@@ -44,6 +46,8 @@
 		<jar jarfile="jar/interloc.jar" manifest="interloc.manifest" index="Yes">
 			<fileset dir="${build.dir}" includes="fr/**/*.class" />
 			<fileset dir="./src" includes="build.conf" />
+			<fileset dir="./src" includes="template.vm" />
+			<fileset dir="./src" includes="labels.properties" />
 		</jar>
 	</target>
 
@@ -78,6 +82,8 @@
 			<classpath refid="jar.classpath" />
 			<resource file="src/build.conf" />
 			<resource file="src/labels.properties" />
+			<resource file="src/template.vm" />
+			<library jar="${lib.dir}/velocity-dep-1.5.jar"/>
 			<classfilter>
 				<exclude name="org.bouncycastle." />
 				<exclude name="org.w3c.dom." />
