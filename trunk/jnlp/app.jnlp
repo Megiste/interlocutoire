@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+#
+
+# JNLP File for Interloc
+#
+ -->
+
+
+<jnlp
+  spec="1.0+"
+  codebase="http://lependu.free.fr/interloc"
+      href="app.jnlp">
+     <information> 
+      <title>Interloc</title> 
+      <vendor>Megiste</vendor>
+      <description>Aide à l'analyse interlocutoire</description>
+      <offline-allowed/> 
+	  <shortcut online="true">
+      <desktop/>
+      <menu submenu="Interloc"/>
+    </shortcut>
+   </information> 
+    <security>
+      <all-permissions/>
+  </security> 
+   <resources>
+      <j2se version="1.4+" href="http://java.sun.com/products/autodl/j2se"/>
+	  
+<jar href="interloc.jar" main="true"/>
+   </resources>
+   <application-desc main-class="fr.megiste.interloc.InterlocMain"/>
+</jnlp> 
