@@ -1,0 +1,11 @@
+<xml xmlns:o="urn:schemas-microsoft-com:office:office">
+#set ($fileName = $file.getName())
+ <o:MainFile HRef="../$fileName"/>
+#foreach( $pack in $packs )
+#foreach( $image in $pack.getImages())
+#set ($imgName = "image" + $velocityCount + ".jpg")
+ <o:File HRef="$imgName"/>
+#end
+#end
+ <o:File HRef="filelist.xml"/>
+</xml>

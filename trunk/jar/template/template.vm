@@ -124,7 +124,7 @@ div.Section1
 <div class=Section1>
 
 <p class=MsoPlainText><o:p>&nbsp;</o:p></p>
-
+#set( $iPack = 0)
 #foreach( $pack in $packs )
 	#if ($pack.getTitle())
 		<h1>$pack.getTitle()</h1>
@@ -133,7 +133,7 @@ div.Section1
  style='mso-cellspacing:0cm;mso-padding-alt:0cm 0cm 0cm 0cm'>
 #set( $compteur = 0)
 #foreach( $image in $pack.getImages())
-#set ($imgName = "image" + $velocityCount + ".jpg")
+#set ($imgName = "image" + $iPack +"_" +$velocityCount +".jpg")
 #set ($newPath = $exporter.writeImage($repName,$image,$imgName))
  <tr style='mso-yfti-irow:$compteur'>
  #set( $compteur = $compteur+1)
@@ -149,6 +149,7 @@ div.Section1
 
 #end
  </table>
+ #set( $iPack = $iPack + 1)
 #end
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 

@@ -1,0 +1,4 @@
+#set($compteur=37)
+Hello
+$compteur
+Hello
