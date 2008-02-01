@@ -50,7 +50,6 @@ import fr.megiste.interloc.data.ModeleLiens;
 import fr.megiste.interloc.hist.ErreurRecupHistoriqueException;
 import fr.megiste.interloc.rtf.DocumentExporter;
 import fr.megiste.interloc.rtf.ErreurExportException;
-import fr.megiste.interloc.rtf.HTMLExporter;
 import fr.megiste.interloc.rtf.RTFExporter;
 import fr.megiste.interloc.rtf.VelocityExporter;
 import fr.megiste.interloc.rtf.DocumentExporter.AffichageHelper;
@@ -155,19 +154,17 @@ public class InterlocIhm extends JFrame {
 
 	private static final int PANNEAU_HAUT = 0;
 
-	public static final FileFilter RTF_FILE_FILTER = new FileFilter() {
+	public static final FileFilter EXPORT_FILE_FILTER = new FileFilter() {
 
 		public boolean accept(File f) {
 			if (f.isDirectory())
 				return true;
 			else
-				return f.getName().toLowerCase().endsWith("rtf")
-						|| f.getName().toLowerCase().endsWith("doc")
-						|| f.getName().toLowerCase().endsWith("html");
+				return  f.getName().toLowerCase().endsWith("html");
 		}
 
 		public String getDescription() {
-			return "Fichier *.rtf";
+			return "Fichier *.html";
 		}
 
 	};
@@ -519,8 +516,8 @@ public class InterlocIhm extends JFrame {
 		}
 
 		String filename = "pas_a_pas_"
-				+ fichierCourant.getName().replaceAll("." + AccesseurFichierHOM.SUFFIX_HOM,
-						id + "." + RTFExporter.SUFFIX_HTML);
+				+ fichierCourant.getName().replaceAll("\\." + AccesseurFichierHOM.SUFFIX_HOM,
+						id + "." + DocumentExporter.SUFFIX_HTML);
 
 		if (lastExportSelectedFile != null) {
 			chooserExport
@@ -530,7 +527,7 @@ public class InterlocIhm extends JFrame {
 		}
 		int returnVal = chooserExport.showSaveDialog(this);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
-			DocumentExporter exporteur = new HTMLExporter(dessinateur.getModel());
+			DocumentExporter exporteur = new VelocityExporter(dessinateur.getModel());
 			exporteur.setAffichageHelper(affichageHelper);
 			exporteur.exporterPasAPas(chooserExport.getSelectedFile(), dessinateur.getIndiceMin(),
 					dessinateur.getIndiceMax());
@@ -691,7 +688,7 @@ public class InterlocIhm extends JFrame {
 
 	private void initChooserExport() {
 		chooserExport = new JFileChooser(repertoireDefaut);
-		chooserExport.setFileFilter(RTF_FILE_FILTER);
+		chooserExport.setFileFilter(EXPORT_FILE_FILTER);
 	}
 
 	private void initChooserExportImage() {

@@ -64,7 +64,7 @@ public abstract class DocumentExporter {
         packs=new ArrayList();
     }
 
-    private void dessinerEtape(int noEtape) {
+    private void dessinerEtape(int noEtape, int phraseMin, int phraseMax) {
         logger.info("Pas à pas : " + noEtape);
         String message = "label.pasapas";
         affichageHelper.afficherMessage(message,new Object[]{""+noEtape});
@@ -112,7 +112,7 @@ public abstract class DocumentExporter {
                 dessinateur.avancer(1);
                 if (modele.getMaxIndexFeuilleAvecParent() > phraseMin
                         && modele.getMaxIndexFeuilleAvecParent() <= phraseMax) {
-                    dessinerEtape(i + 1);
+                    dessinerEtape(i + 1,phraseMin,phraseMax);
                 }
             }
             writeImagePacks();

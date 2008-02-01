@@ -6,6 +6,7 @@
 	<property name="lib.dir" value="./lib" />
 	<property name="main.class" value="fr.megiste.interloc.InterlocMain" />
 
+	<mkdir dir="${build.dir}"/>
 	<!-- Definition du classpath du projet -->
 	<path id="projet.classpath">
 		<fileset dir="${lib.dir}">
@@ -19,7 +20,7 @@
 		</fileset>
 	</path>
 
-	<target name="main" depends="jar, ftp, zip" description="Main target">
+	<target name="main" depends="jar" description="Main target">
 		<echo>
             Building the .jar file.
         </echo>
