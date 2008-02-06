@@ -80,10 +80,7 @@ public class VelocityExporter extends DocumentExporter {
 		context = new VelocityContext();
 		context.put("file", file);
 		context.put("exporter", this);
-		
-		
 	}
-
 
 	public void writeImagePacks() {
 		context.put("packs", (ImagePack[]) packs.toArray(new ImagePack[packs.size()]));
