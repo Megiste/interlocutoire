@@ -4,12 +4,16 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Logger;
+
+import javax.imageio.ImageIO;
 
 import fr.megiste.interloc.InterlocMain;
 import fr.megiste.interloc.data.ModeleLiens;
 import fr.megiste.interloc.ihm.DessinateurLiens;
+import fr.megiste.interloc.util.InterlocException;
 import fr.megiste.interloc.util.Messages;
 
 public abstract class DocumentExporter {
@@ -36,8 +40,6 @@ public abstract class DocumentExporter {
 
 	public static final String SUFFIX_HTML = "html";
 
-	private static final int NB_ETAPES_PAR_PAGE = 10;
-
 	public static BufferedImage scale(BufferedImage bi, double scaleValue) {
 		AffineTransform tx = new AffineTransform();
 		tx.scale(scaleValue, scaleValue);
@@ -58,10 +60,6 @@ public abstract class DocumentExporter {
 
 	protected File workingDir = new File("./img.tmp");
 
-	private String pageSuivante;
-
-	private String pagePrecedente;
-
 	public DocumentExporter(ModeleLiens modele) {
 		this.modele = modele;
 		// feuilles = modele.getFeuilles();
@@ -78,7 +76,7 @@ public abstract class DocumentExporter {
 		affichageHelper.afficherProgres(noEtape);
 
 		newImagePack();
-		currentImagePack.setTitle("Etape " + noEtape + " sur " + nbEtapes + " :");
+		currentImagePack.setTitle("Etape " + noEtape + " sur " + nbEtapes);
 
 		BufferedImage rendImage = dessinateur.creerImage();
 
@@ -111,44 +109,22 @@ public abstract class DocumentExporter {
 			dessinateur.redessiner();
 			dessinateur.reculer(nbEtapes);
 
-			int nbPages = nbEtapes / NB_ETAPES_PAR_PAGE;
-			if (nbEtapes % NB_ETAPES_PAR_PAGE != 0) {
-				nbPages++;
+			packs.clear();
+			currentImagePack = null;
+
+			initDocument(outputFile);
+
+			for (int i = 0; i < nbEtapes; i++) {
+				// modeleTmp.addElement(modele.getElementAt(i +
+				// feuilles.size()));
+				dessinateur.avancer(1);
+				if (modele.getMaxIndexFeuilleAvecParent() > phraseMin
+						&& modele.getMaxIndexFeuilleAvecParent() <= phraseMax) {
+					dessinerEtape(i + 1, nbEtapes, phraseMin, phraseMax);
+				}
 			}
 
-			for (int page = 0; page < nbPages; page++) {
-				int etapeMin  = page * NB_ETAPES_PAR_PAGE;
-				int etapeMax = (page+1) * NB_ETAPES_PAR_PAGE;
-				if(etapeMax>nbEtapes){
-					etapeMax = nbEtapes;
-				}
-				
-				packs.clear();
-				currentImagePack = null;
-				File partialOuputFile = generatePartialOutputFile(outputFile, page);
-
-				if (page != 0) {
-					pagePrecedente = "" + generatePartialOutputFile(outputFile,page-1).getName();
-				}
-				if (page != nbPages - 1) {
-					pageSuivante = "" + generatePartialOutputFile(outputFile,page+1).getName();
-				}
-
-				initDocument(partialOuputFile);
-
-
-				for (int i = etapeMin; i < etapeMax; i++) {
-					// modeleTmp.addElement(modele.getElementAt(i +
-					// feuilles.size()));
-					dessinateur.avancer(1);
-					if (modele.getMaxIndexFeuilleAvecParent() > phraseMin
-							&& modele.getMaxIndexFeuilleAvecParent() <= phraseMax) {
-						dessinerEtape(i + 1, nbEtapes, phraseMin, phraseMax);
-					}
-				}
-
-				writeImagePacks();
-			}
+			writeImagePacks();
 
 			// closeDocument();
 		} catch (Exception e) {
@@ -160,27 +136,7 @@ public abstract class DocumentExporter {
 		affichageHelper.finish();
 	}
 
-	/**
-	 * @param outputFile
-	 * @param page
-	 * @return
-	 */
-	private File generatePartialOutputFile(File outputFile, int page) {
-		int idx = outputFile.getName().lastIndexOf(".");
-		String fileNameWithoutSuffix = outputFile.getName();
-		String suffix = "";
-		if (idx > -1) {
-			suffix = fileNameWithoutSuffix.substring(idx);
-			fileNameWithoutSuffix = fileNameWithoutSuffix.substring(0, idx);
-		}
-		String outFileName = outputFile.getName();
-		if(page>0){
-			outFileName = fileNameWithoutSuffix + "_" + page + suffix;	
-		} 
-		
-		File partialOuputFile = new File(outputFile.getParentFile(), outFileName);
-		return partialOuputFile;
-	}
+
 
 	public abstract void writeImagePacks();
 
@@ -230,7 +186,9 @@ public abstract class DocumentExporter {
 				 * ImageIO.write(subImage, "jpg", fichierImage);
 				 */
 
-				currentImagePack.getImages().add(subImage);
+				File tmp = File.createTempFile("img", "jpg");
+				ImageIO.write(subImage, "jpg", tmp);
+				currentImagePack.getImages().add(tmp);
 
 				// insertImage(subImage, "" + i);
 
@@ -360,27 +318,20 @@ public abstract class DocumentExporter {
 			int pos = cuts[i];
 			int width = rendImage.getWidth();
 			BufferedImage subImage = rendImage.getSubimage(0, oldpos, width, pos - oldpos);
-			currentImagePack.getImages().add(subImage);
+			File tmp;
+			try {
+				tmp = File.createTempFile("img", "tmp");
+				ImageIO.write(subImage, "jpg", tmp);
+			} catch (IOException e) {
+				throw new InterlocException(e);
+			}
+			currentImagePack.getImages().add(tmp);
 			// insertImage(subImage, "" + noEtape + "_" + i);
 			oldpos = pos;
 		}
 
 	}
 
-	/**
-	 * Gets the pagePrecedente.
-	 * @return the pagePrecedente
-	 */
-	public String getPagePrecedente() {
-		return pagePrecedente;
-	}
 
-	/**
-	 * Gets the pageSuivante.
-	 * @return the pageSuivante
-	 */
-	public String getPageSuivante() {
-		return pageSuivante;
-	}
 
 }
