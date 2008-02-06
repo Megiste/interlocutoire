@@ -48,4 +48,8 @@ public class ImagePack {
 	public void setTitle(String title) {
 		this.title = title;
 	}
+	
+	public int getSize(){
+		return images.size() + 1;
+	}
 }

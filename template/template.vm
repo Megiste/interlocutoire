@@ -10,6 +10,12 @@
 <body lang=FR>
 
 <div>
+#if ($pagePrecedente)
+	<a href="$pagePrecedente">Page precedente</a><tab/>    
+#end
+#if ($pageSuivante)
+	<a href="$pageSuivante">Page suivante</a><br/>
+#end
 <h1>Liste des étapes</h1>
 #foreach( $pack in $packs )
 	#if ($pack.getTitle())
@@ -21,8 +27,8 @@
 #set( $iPack = 0)
 #foreach( $pack in $packs )
 	#if ($pack.getTitle())
-		<h1>$pack.getTitle()</h1>
 		<a name="$pack.getTitle()"/>
+		<h1>$pack.getTitle()</h1>
 	#end
 <table border=0 cellspacing=0 cellpadding=0>
 	#set( $compteur = 0)
@@ -42,10 +48,10 @@
 	#set( $iPack = $iPack + 1)
 #end
 #if ($pagePrecedente)
-	<a href="$exporter.getPagePrecedente()">Page precedente</a><br/>
+	<a href="$pagePrecedente">Page precedente</a>    
 #end
 #if ($pageSuivante)
-	<a href="$exporter.getPageSuivante()">Page suivante</a><br/>
+	<a href="$pageSuivante">Page suivante</a><br/>
 #end
 
 </div>
